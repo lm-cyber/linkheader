@@ -110,5 +110,6 @@ def save_banner(image: Image.Image, path: str, fmt: OutputFormat) -> Path:
         rgb_image = image.convert("RGB")
         rgb_image.save(output_path, "JPEG", quality=95)
     else:
-        image.save(output_path, "PNG")
+        rgb_image = image.convert("RGB")
+        rgb_image.save(output_path, "PNG")
     return output_path
