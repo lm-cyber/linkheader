@@ -1,4 +1,4 @@
-"""Data models for linkedge."""
+"""Data models for linkheader."""
 
 from __future__ import annotations
 
@@ -6,13 +6,6 @@ import re
 from enum import StrEnum
 
 from pydantic import BaseModel, field_validator
-
-
-class QRPosition(StrEnum):
-    RIGHT = "right"
-    LEFT = "left"
-    CORNER_BR = "corner-br"
-    CORNER_BL = "corner-bl"
 
 
 class PatternStyle(StrEnum):
@@ -28,12 +21,8 @@ class OutputFormat(StrEnum):
 
 
 class BannerConfig(BaseModel):
-    name: str
-    title: str
-    tagline: str | None = None
-    url: str
+    urls: list[str]
     color: str
-    qr_position: QRPosition = QRPosition.RIGHT
     pattern: PatternStyle = PatternStyle.NONE
     output: str = "banner.png"
     format: OutputFormat = OutputFormat.PNG
@@ -41,11 +30,19 @@ class BannerConfig(BaseModel):
     width: int = 1584
     height: int = 396
 
+    @field_validator("urls")
+    @classmethod
+    def validate_urls(cls, v: list[str]) -> list[str]:
+        """Ensure 1-4 URLs are provided."""
+        if not v or len(v) > 4:
+            raise ValueError("Provide between 1 and 4 URLs.")
+        return v
+
     @field_validator("color")
     @classmethod
     def validate_color(cls, v: str) -> str:
         """Normalize and validate hex color or palette name."""
-        from linkedge.palette import PALETTES
+        from linkheader.palette import PALETTES
 
         # Check if it's a palette name first
         if v.lower() in PALETTES:

@@ -1,4 +1,4 @@
-"""QR code generation for linkedge."""
+"""QR code generation for linkheader."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from qrcode.image.styles.moduledrawers.pil import (  # type: ignore[import-untyp
 )
 from qrcode.main import QRCode  # type: ignore[import-untyped]
 
-from linkedge.exceptions import QRGenerationError
+from linkheader.exceptions import QRGenerationError
 
 
 def _recolor(
@@ -34,6 +34,39 @@ def _recolor(
             else:
                 pixels[x, y] = (*back_color, a)
     return rgba
+
+
+def overlay_favicon(
+    qr_img: Image.Image,
+    favicon: Image.Image,
+    bg_color: tuple[int, int, int],
+    favicon_ratio: float = 0.22,
+) -> Image.Image:
+    """Overlay a favicon on the center of a QR code image.
+
+    The favicon is sized to ~22% of the QR width (within ERROR_CORRECT_H's 30% tolerance).
+    A background-colored padding rectangle is drawn behind it for readability.
+    """
+    qr_size = qr_img.width
+    icon_size = int(qr_size * favicon_ratio)
+    padding = icon_size // 6
+
+    favicon_resized = favicon.resize((icon_size, icon_size), Resampling.LANCZOS)
+
+    # Create a background pad behind the favicon
+    pad_size = icon_size + padding * 2
+    pad = Image.new("RGBA", (pad_size, pad_size), (*bg_color, 255))
+
+    # Center positions
+    pad_x = (qr_size - pad_size) // 2
+    pad_y = (qr_size - pad_size) // 2
+    icon_x = (qr_size - icon_size) // 2
+    icon_y = (qr_size - icon_size) // 2
+
+    result = qr_img.copy()
+    result.paste(pad, (pad_x, pad_y), pad)
+    result.paste(favicon_resized, (icon_x, icon_y), favicon_resized)
+    return result
 
 
 def generate_qr(

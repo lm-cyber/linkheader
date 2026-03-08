@@ -1,4 +1,4 @@
-"""CLI interface for linkedge."""
+"""CLI interface for linkheader."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from typing import Annotated
 import typer
 
 app = typer.Typer(
-    name="linkedge",
+    name="linkheader",
     help="Generate LinkedIn profile banner images with QR codes.",
     no_args_is_help=True,
 )
@@ -17,18 +17,13 @@ app = typer.Typer(
 
 @app.command()
 def generate(
-    name: Annotated[str, typer.Option("--name", help="Your display name")],
-    title: Annotated[str, typer.Option("--title", help="Your professional title")],
-    url: Annotated[str, typer.Option("--url", help="LinkedIn profile URL for QR code")],
+    url: Annotated[
+        list[str],
+        typer.Option("--url", help="URL for QR code (repeat for multiple, max 4)"),
+    ],
     color: Annotated[
         str, typer.Option("--color", help="Background color: hex code or palette name")
     ],
-    tagline: Annotated[
-        str | None, typer.Option("--tagline", help="Optional tagline or keywords")
-    ] = None,
-    qr_position: Annotated[
-        str, typer.Option("--qr-position", help="QR code position: right/left/corner-br/corner-bl")
-    ] = "right",
     pattern: Annotated[
         str, typer.Option("--pattern", help="Pattern overlay: none/grid/dots/lines")
     ] = "none",
@@ -45,20 +40,16 @@ def generate(
     """Generate a LinkedIn banner image."""
     from rich.console import Console
 
-    from linkedge.exceptions import LinkedgeError
-    from linkedge.generator import generate_banner, save_banner
-    from linkedge.models import BannerConfig
+    from linkheader.exceptions import LinkheaderError
+    from linkheader.generator import generate_banner, save_banner
+    from linkheader.models import BannerConfig
 
     console = Console()
 
     try:
         config = BannerConfig(
-            name=name,
-            title=title,
-            tagline=tagline,
-            url=url,
+            urls=url,
             color=color,
-            qr_position=qr_position,  # type: ignore[arg-type]
             pattern=pattern,  # type: ignore[arg-type]
             output=output,
             format=fmt,  # type: ignore[arg-type]
@@ -73,7 +64,7 @@ def generate(
         if preview:
             _open_preview(str(path))
 
-    except LinkedgeError as e:
+    except LinkheaderError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(code=1) from None
     except Exception as e:
@@ -87,7 +78,7 @@ def palettes() -> None:
     from rich.console import Console
     from rich.table import Table
 
-    from linkedge.palette import PALETTES
+    from linkheader.palette import PALETTES
 
     console = Console()
     table = Table(title="Available Palettes")

@@ -1,8 +1,8 @@
-"""Color palette system for linkedge."""
+"""Color palette system for linkheader."""
 
 from __future__ import annotations
 
-from linkedge.exceptions import InvalidColorError
+from linkheader.exceptions import InvalidColorError
 
 PALETTES: dict[str, str] = {
     "midnight": "#1a1a2e",
